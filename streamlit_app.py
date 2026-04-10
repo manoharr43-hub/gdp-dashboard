@@ -1,151 +1,83 @@
 import streamlit as st
 import pandas as pd
-import math
-from pathlib import Path
+import numpy as np
+import yfinance as yf
+import plotly.express as px
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
+st.set_page_config(page_title="🔥 TG JEE + Trading App", layout="wide")
+
+# =============================
+# SIDEBAR MENU
+# =============================
+menu = st.sidebar.selectbox(
+    "Select Feature",
+    ["🏠 Home", "📚 JEE Subjects", "📝 Quiz", "📈 Stock Viewer"]
 )
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+# =============================
+# HOME
+# =============================
+if menu == "🏠 Home":
+    st.title("🔥 TG JEE + Trading App")
+    st.write("All-in-One Learning + Stock Analysis Platform 🚀")
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+# =============================
+# JEE SUBJECTS
+# =============================
+elif menu == "📚 JEE Subjects":
+    st.title("📚 JEE Subjects")
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+    subject = st.selectbox("Choose Subject", ["Physics", "Chemistry", "Maths"])
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+    topics = {
+        "Physics": ["Kinematics", "Laws of Motion", "Thermodynamics"],
+        "Chemistry": ["Organic", "Inorganic", "Physical"],
+        "Maths": ["Algebra", "Calculus", "Trigonometry"]
+    }
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+    if subject:
+        st.subheader(f"{subject} Topics")
+        for t in topics[subject]:
+            st.write(f"👉 {t}")
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
+# =============================
+# QUIZ SECTION
+# =============================
+elif menu == "📝 Quiz":
+    st.title("📝 JEE Quiz")
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+    question = "What is 2 + 2?"
+    options = ["3", "4", "5"]
 
-    return gdp_df
+    answer = st.radio(question, options)
 
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
+    if st.button("Submit"):
+        if answer == "4":
+            st.success("Correct ✅")
         else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
+            st.error("Wrong ❌")
 
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+# =============================
+# STOCK VIEWER
+# =============================
+elif menu == "📈 Stock Viewer":
+    st.title("📈 Live Stock Viewer")
+
+    stock = st.text_input("Enter Stock Symbol (e.g. RELIANCE.NS)", "RELIANCE.NS")
+
+    if st.button("Fetch Data"):
+        try:
+            data = yf.download(stock, period="1mo")
+
+            if data.empty:
+                st.error("No data found ❌")
+            else:
+                st.success("Data Loaded ✅")
+
+                st.dataframe(data.tail())
+
+                fig = px.line(data, y="Close", title=f"{stock} Price")
+                st.plotly_chart(fig)
+
+        except Exception as e:
+            st.error(f"Error: {e}")
