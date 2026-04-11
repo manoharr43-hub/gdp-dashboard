@@ -1,6 +1,5 @@
 streamlit
 pandas
-yfinance
-tg-jee-app/
-│── app.py
-│── requirements.txt
+matplotlib
+seaborn
+plotly
