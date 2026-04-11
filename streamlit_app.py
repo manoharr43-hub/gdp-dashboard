@@ -16,42 +16,50 @@ elif menu == "JEE Subjects":
     # Subject selection
     subject = st.selectbox("Choose Subject", ["Physics", "Chemistry", "Mathematics"])
 
-    # Subject content dictionary
-    subject_content = {
+    # Topics dictionary with sample questions
+    syllabus_questions = {
         "Physics": {
-            "overview": "Physics is the study of matter, energy, and their interactions. It explains natural phenomena using laws and principles.",
-            "topics": {
-                "Kinematics": "Study of motion without considering its causes. Focus on displacement, velocity, acceleration.",
-                "Laws of Motion": "Newton's three laws explain how forces affect motion.",
-                "Thermodynamics": "Study of heat, energy, and work. Includes laws of energy conservation."
+            "Kinematics": {
+                "question": "A car accelerates uniformly from rest at 2 m/s². Find its velocity after 10 seconds.",
+                "answer": "Using v = u + at → v = 0 + 2×10 = 20 m/s."
+            },
+            "Laws of Motion": {
+                "question": "State Newton’s Second Law of Motion.",
+                "answer": "It states that Force = mass × acceleration (F = ma)."
             }
         },
         "Chemistry": {
-            "overview": "Chemistry is the study of substances, their properties, reactions, and how they combine to form new substances.",
-            "topics": {
-                "Atomic Structure": "Understanding protons, neutrons, electrons, and how they form atoms.",
-                "Chemical Bonding": "Explains ionic, covalent, and metallic bonds between atoms.",
-                "Organic Chemistry": "Study of carbon compounds, reactions, and functional groups."
+            "Atomic Structure": {
+                "question": "What is the maximum number of electrons in the n=3 shell?",
+                "answer": "Using 2n² → 2×3² = 18 electrons."
+            },
+            "Chemical Bonding": {
+                "question": "What is the bond angle in methane (CH₄)?",
+                "answer": "The bond angle is 109.5° due to sp³ hybridization."
             }
         },
         "Mathematics": {
-            "overview": "Mathematics is the language of science. It deals with numbers, equations, functions, and geometry.",
-            "topics": {
-                "Algebra": "Manipulation of symbols and solving equations.",
-                "Calculus": "Study of limits, derivatives, and integrals.",
-                "Coordinate Geometry": "Geometry using coordinates, equations of lines, circles, and conics."
+            "Quadratic Equations": {
+                "question": "Solve x² - 5x + 6 = 0.",
+                "answer": "Factorizing: (x-2)(x-3)=0 → x=2 or x=3."
+            },
+            "Probability": {
+                "question": "What is the probability of getting a head when a coin is tossed?",
+                "answer": "Probability = 1/2."
             }
         }
     }
 
-    # Show subject overview
-    st.subheader(f"{subject} Overview")
-    st.write(subject_content[subject]["overview"])
+    # Topic selection
+    if subject in syllabus_questions:
+        topic = st.selectbox("Choose Topic", list(syllabus_questions[subject].keys()))
 
-    # Show topics with explanations
-    st.subheader(f"{subject} Topics")
-    for t, desc in subject_content[subject]["topics"].items():
-        st.markdown(f"📖 **{subject} → {t}** — {desc}")
+        st.subheader(f"{subject} → {topic}")
+        st.write("📖 Question:")
+        st.info(syllabus_questions[subject][topic]["question"])
+
+        st.write("✅ AI Answer:")
+        st.success(syllabus_questions[subject][topic]["answer"])
 
 elif menu == "Quiz":
     st.title("📝 Quiz Section")
