@@ -2,24 +2,38 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import yfinance as yf
-import plotly.express as px
+import plotly.graph_objects as go
+import json
+from datetime import datetime
 
-st.set_page_config(page_title="🔥 TG JEE + Trading App", layout="wide")
+st.set_page_config(page_title="🔥 TG JEE + AI Trading App", layout="wide")
 
 # =============================
-# SIDEBAR MENU
+# LOAD QUIZ DATA
+# =============================
+def load_quiz():
+    try:
+        with open("quiz_data.json", "r") as f:
+            return json.load(f)
+    except:
+        return []
+
+quiz_data = load_quiz()
+
+# =============================
+# SIDEBAR
 # =============================
 menu = st.sidebar.selectbox(
     "Select Feature",
-    ["🏠 Home", "📚 JEE Subjects", "📝 Quiz", "📈 Stock Viewer"]
+    ["🏠 Home", "📚 JEE Subjects", "📝 Quiz", "📊 Performance", "📈 AI Trading"]
 )
 
 # =============================
 # HOME
 # =============================
 if menu == "🏠 Home":
-    st.title("🔥 TG JEE + Trading App")
-    st.write("All-in-One Learning + Stock Analysis Platform 🚀")
+    st.title("🔥 TG JEE + AI Trading App")
+    st.write("JEE Preparation + Stock Market AI System 🚀")
 
 # =============================
 # JEE SUBJECTS
@@ -35,49 +49,76 @@ elif menu == "📚 JEE Subjects":
         "Maths": ["Algebra", "Calculus", "Trigonometry"]
     }
 
-    if subject:
-        st.subheader(f"{subject} Topics")
-        for t in topics[subject]:
-            st.write(f"👉 {t}")
+    st.subheader(f"{subject} Topics")
+    for t in topics[subject]:
+        st.write(f"👉 {t}")
 
 # =============================
-# QUIZ SECTION
+# QUIZ
 # =============================
 elif menu == "📝 Quiz":
     st.title("📝 JEE Quiz")
 
-    question = "What is 2 + 2?"
-    options = ["3", "4", "5"]
+    if quiz_data:
+        q = quiz_data[0]
+        answer = st.radio(q["question"], q["options"])
 
-    answer = st.radio(question, options)
-
-    if st.button("Submit"):
-        if answer == "4":
-            st.success("Correct ✅")
-        else:
-            st.error("Wrong ❌")
+        if st.button("Submit"):
+            if answer == q["answer"]:
+                st.success("Correct ✅")
+                st.session_state["score"] = st.session_state.get("score", 0) + 1
+            else:
+                st.error("Wrong ❌")
+    else:
+        st.warning("No quiz data found")
 
 # =============================
-# STOCK VIEWER
+# PERFORMANCE
 # =============================
-elif menu == "📈 Stock Viewer":
-    st.title("📈 Live Stock Viewer")
+elif menu == "📊 Performance":
+    st.title("📊 Your Performance")
 
-    stock = st.text_input("Enter Stock Symbol (e.g. RELIANCE.NS)", "RELIANCE.NS")
+    score = st.session_state.get("score", 0)
+    st.metric("Score", score)
 
-    if st.button("Fetch Data"):
+# =============================
+# AI TRADING
+# =============================
+elif menu == "📈 AI Trading":
+    st.title("📈 AI Stock Analyzer")
+
+    stock = st.text_input("Enter Stock Symbol", "RELIANCE.NS")
+
+    if st.button("Analyze"):
         try:
-            data = yf.download(stock, period="1mo")
+            df = yf.download(stock, period="3mo")
 
-            if data.empty:
+            if df.empty:
                 st.error("No data found ❌")
             else:
-                st.success("Data Loaded ✅")
+                # Moving Average
+                df["MA20"] = df["Close"].rolling(20).mean()
+                df["MA50"] = df["Close"].rolling(50).mean()
 
-                st.dataframe(data.tail())
+                last = df.iloc[-1]
 
-                fig = px.line(data, y="Close", title=f"{stock} Price")
+                # Trend Logic
+                if last["MA20"] > last["MA50"]:
+                    signal = "BUY 📈"
+                else:
+                    signal = "SELL 📉"
+
+                st.success(f"Signal: {signal}")
+
+                # Chart
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(y=df["Close"], name="Close"))
+                fig.add_trace(go.Scatter(y=df["MA20"], name="MA20"))
+                fig.add_trace(go.Scatter(y=df["MA50"], name="MA50"))
+
                 st.plotly_chart(fig)
+
+                st.dataframe(df.tail())
 
         except Exception as e:
             st.error(f"Error: {e}")
