@@ -6,19 +6,16 @@ menu = st.sidebar.selectbox(
     ["Home", "JEE Subjects", "Quiz", "Performance"]
 )
 
-# ---------------- Home ----------------
 if menu == "Home":
     st.title("📘 Welcome to JEE Dashboard")
     st.write("This app helps students prepare for JEE with subjects, quizzes, and performance tracking.")
 
-# ---------------- JEE Subjects ----------------
 elif menu == "JEE Subjects":
     st.title("📚 JEE Subjects")
 
     # Subject selection
     subject = st.selectbox("Choose Subject", ["Physics", "Chemistry", "Mathematics"])
 
-    # Topics + Questions + Answers + Explanations
     syllabus_questions = {
         "Physics": {
             "Kinematics": {
@@ -87,19 +84,9 @@ elif menu == "JEE Subjects":
 
     # Navigation buttons
     col1, col2 = st.columns(2)
-    if col1.button("⬅ Previous") and st.session_state.topic_index > 0:
-        st.session_state.topic_index -= 1
-    if col2.button("Next ➡") and st.session_state.topic_index < len(topics) - 1:
-        st.session_state.topic_index += 1
-
-# ---------------- Quiz ----------------
-elif menu == "Quiz":
-    st.title("📝 Quiz Section")
-    st.write("Here you can attempt practice quizzes for JEE.")
-    st.info("Feature under development – quizzes will be added soon!")
-
-# ---------------- Performance ----------------
-elif menu == "Performance":
-    st.title("📊 Performance Tracker")
-    st.write("Track your progress across subjects and quizzes.")
-    st.info("Feature under development – performance analytics will be added soon!")
+    if col1.button("⬅ Previous"):
+        if st.session_state.topic_index > 0:
+            st.session_state.topic_index -= 1
+    if col2.button("Next ➡"):
+        if st.session_state.topic_index < len(topics) - 1:
+            st.session_state.topic_index += 1
