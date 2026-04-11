@@ -18,57 +18,62 @@ elif menu == "JEE Subjects":
     # Subject selection
     subject = st.selectbox("Choose Subject", ["Physics", "Chemistry", "Mathematics"])
 
-    # Topics + Questions + Answers + Explanations (based on NTA JEE Main syllabus)
+    # Topics + Questions + Answers + Explanations
     syllabus_questions = {
         "Physics": {
             "Kinematics": {
                 "question": "A car accelerates uniformly from rest at 2 m/s². Find its velocity after 10 seconds.",
                 "short_answer": "Velocity = 20 m/s.",
-                "long_explanation": "We use the first equation of motion: v = u + at. Here u=0, a=2 m/s², t=10s. Substituting values: v = 0 + 2×10 = 20 m/s. This shows how velocity increases linearly with time under constant acceleration."
+                "long_explanation": "We use v = u + at. Here u=0, a=2, t=10 → v=20 m/s."
             },
             "Laws of Motion": {
                 "question": "State Newton’s Second Law of Motion.",
-                "short_answer": "Force = mass × acceleration (F = ma).",
-                "long_explanation": "Newton’s Second Law explains the relationship between force, mass, and acceleration. It states that the net force acting on a body is equal to the product of its mass and acceleration. This law forms the foundation of dynamics and helps calculate motion under applied forces."
+                "short_answer": "Force = mass × acceleration.",
+                "long_explanation": "It relates force, mass, and acceleration. F = ma."
             },
             "Thermodynamics": {
                 "question": "State the First Law of Thermodynamics.",
                 "short_answer": "Energy can neither be created nor destroyed.",
-                "long_explanation": "The First Law of Thermodynamics is essentially the law of conservation of energy. It states that the change in internal energy of a system is equal to the heat supplied minus the work done by the system. This principle governs all energy transformations in physics."
+                "long_explanation": "ΔU = Q - W. Internal energy change equals heat supplied minus work done."
             }
         },
         "Chemistry": {
             "Atomic Structure": {
                 "question": "What is the maximum number of electrons in the n=3 shell?",
                 "short_answer": "18 electrons.",
-                "long_explanation": "The formula for maximum electrons in a shell is 2n². For n=3, 2×3² = 18. This means the third shell can accommodate up to 18 electrons, distributed across s, p, and d orbitals."
+                "long_explanation": "Formula 2n² → 2×3² = 18."
             },
             "Chemical Bonding": {
                 "question": "What is the bond angle in methane (CH₄)?",
                 "short_answer": "109.5°.",
-                "long_explanation": "Methane has a tetrahedral geometry due to sp³ hybridization of carbon. The bond angle between H–C–H is 109.5°, which minimizes electron pair repulsion according to VSEPR theory."
+                "long_explanation": "Methane has tetrahedral geometry due to sp³ hybridization."
             }
         },
         "Mathematics": {
             "Quadratic Equations": {
                 "question": "Solve x² - 5x + 6 = 0.",
                 "short_answer": "x = 2 or x = 3.",
-                "long_explanation": "Factorizing: x² - 5x + 6 = (x-2)(x-3). Setting each factor equal to zero gives x=2 or x=3. These are the roots of the quadratic equation."
+                "long_explanation": "Factorize: (x-2)(x-3)=0 → roots are 2, 3."
             },
             "Probability": {
                 "question": "What is the probability of getting a head when a coin is tossed?",
                 "short_answer": "1/2.",
-                "long_explanation": "A fair coin has two equally likely outcomes: Head or Tail. Probability = (favorable outcomes)/(total outcomes) = 1/2. This is a fundamental concept in probability theory."
+                "long_explanation": "Two outcomes: Head/Tail. Probability = 1/2."
             }
         }
     }
 
-    # Session state for topic navigation
-    if "topic_index" not in st.session_state:
+    # Reset topic index when subject changes
+    if "current_subject" not in st.session_state or st.session_state.current_subject != subject:
+        st.session_state.current_subject = subject
         st.session_state.topic_index = 0
 
-    # Current subject topics
     topics = list(syllabus_questions[subject].keys())
+
+    # Ensure topic_index is within bounds
+    if st.session_state.topic_index >= len(topics):
+        st.session_state.topic_index = 0
+
     current_topic = topics[st.session_state.topic_index]
 
     # Display Q&A
