@@ -18,16 +18,28 @@ elif menu == "JEE Subjects":
     # Subject selection
     subject = st.selectbox("Choose Subject", ["Physics", "Chemistry", "Mathematics"])
 
-    # Topics dictionary
+    # Topics with explanations
     topics = {
-        "Physics": ["Kinematics", "Laws of Motion", "Thermodynamics"],
-        "Chemistry": ["Atomic Structure", "Chemical Bonding", "Organic Chemistry"],
-        "Mathematics": ["Algebra", "Calculus", "Coordinate Geometry"]
+        "Physics": {
+            "Kinematics": "Study of motion without considering its causes. Focus on displacement, velocity, acceleration.",
+            "Laws of Motion": "Newton's three laws explain how forces affect motion.",
+            "Thermodynamics": "Study of heat, energy, and work. Includes laws of energy conservation."
+        },
+        "Chemistry": {
+            "Atomic Structure": "Understanding protons, neutrons, electrons, and how they form atoms.",
+            "Chemical Bonding": "Explains ionic, covalent, and metallic bonds between atoms.",
+            "Organic Chemistry": "Study of carbon compounds, reactions, and functional groups."
+        },
+        "Mathematics": {
+            "Algebra": "Manipulation of symbols and solving equations.",
+            "Calculus": "Study of limits, derivatives, and integrals.",
+            "Coordinate Geometry": "Geometry using coordinates, equations of lines, circles, and conics."
+        }
     }
 
     st.subheader(f"{subject} Topics")
-    for t in topics[subject]:
-        st.markdown(f"📖 {t}")
+    for t, desc in topics[subject].items():
+        st.markdown(f"📖 **{t}** — {desc}")
 
 # Quiz Page
 elif menu == "Quiz":
