@@ -2,92 +2,61 @@ import streamlit as st
 import json
 import random
 
+# పేజీ సెట్టింగ్స్
 st.set_page_config(page_title="JEE Quiz App", layout="centered")
+st.title("📘 JEE Quiz App (AI Powered)")
 
-st.title("📘 JEE Prep: AI Quiz Master")
-
-# Load JSON Data
+# JSON డేటాను లోడ్ చేయడం (Caching వాడితే వేగం పెరుగుతుంది)
 @st.cache_data
 def load_data():
     try:
-        # Using a raw string for the path is good practice
         with open(r"C:\Users\User\Desktop\all_jee_data.json", "r", encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
-        st.error("❌ JSON file not found. Check the path.")
+        st.error("❌ ఫైల్ దొరకలేదు. దయచేసి Path సరిచూసుకోండి.")
         return []
 
 data = load_data()
 
-if not data:
-    st.stop()
-
-# --- Session State Initialization ---
+# Session State ని సెట్ చేయడం (పేజీ రీఫ్రెష్ అయినా డేటా పోకుండా)
 if "score" not in st.session_state:
     st.session_state.score = 0
-if "q_index" not in st.session_state:
-    # Use index-based tracking for better control
-    st.session_state.current_q = random.choice(data)
+if "current_question" not in st.session_state:
+    st.session_state.current_question = random.choice(data)
 if "answered" not in st.session_state:
     st.session_state.answered = False
-if "feedback" not in st.session_state:
-    st.session_state.feedback = ""
 
-# --- Helper Functions ---
-def next_question():
-    st.session_state.current_q = random.choice(data)
-    st.session_state.answered = False
-    st.session_state.feedback = ""
-    # Clear the input text by using a key (see text_input below)
-    if "user_input" in st.session_state:
-        st.session_state.user_input = ""
+# ప్రశ్నను చూపించడం
+st.subheader("📖 ప్రశ్న:")
+st.info(st.session_state.current_question.get("text", "ప్రశ్న అందుబాటులో లేదు"))
 
-# --- UI Layout ---
-st.subheader("📖 Question")
-st.info(st.session_state.current_q.get("text", "No question text found."))
+# సమాధానం ఇన్పుట్
+user_ans = st.text_input("✍ మీ సమాధానాన్ని టైప్ చేయండి:", key="ans_input")
 
-# If your JSON has images for math/physics diagrams:
-if "image_url" in st.session_state.current_q:
-    st.image(st.session_state.current_q["image_url"])
-
-# Answer Input
-user_ans = st.text_input("✍ Type your answer here:", key="user_input")
-
-col1, col2 = st.columns([1, 4])
+col1, col2 = st.columns(2)
 
 with col1:
     if st.button("✅ Submit"):
-        if user_ans and not st.session_state.answered:
-            # Assumes your JSON has a key called 'correct_answer'
-            correct_ans = str(st.session_state.current_q.get("answer", "")).strip().lower()
+        if not st.session_state.answered:
+            # ఇక్కడ 'answer' అనేది మీ JSON లో ఉన్న కీ (Key) అని గమనించగలరు
+            correct_answer = str(st.session_state.current_question.get("answer", "")).strip().lower()
             
-            if user_ans.strip().lower() == correct_ans:
+            if user_ans.strip().lower() == correct_answer:
+                st.success("🔥 అద్భుతం! సరైన సమాధానం.")
                 st.session_state.score += 1
-                st.session_state.feedback = "correct"
             else:
-                st.session_state.feedback = "wrong"
+                st.error(f"❌ తప్పు సమాధానం. సరైన సమాధానం: {correct_answer}")
             
             st.session_state.answered = True
-        elif st.session_state.answered:
-            st.warning("Already submitted!")
         else:
-            st.warning("Please enter an answer.")
+            st.warning("మీరు ఇప్పటికే ఈ ప్రశ్నకు సమాధానం ఇచ్చారు.")
 
 with col2:
     if st.button("➡ Next Question"):
-        next_question()
-        st.rerun()
+        st.session_state.current_question = random.choice(data)
+        st.session_state.answered = False
+        st.rerun() # పేజీని వెంటనే రీఫ్రెష్ చేస్తుంది
 
-# --- Feedback & Explanations ---
-if st.session_state.feedback == "correct":
-    st.success(f"🔥 Correct! The answer was: {st.session_state.current_q.get('answer')}")
-elif st.session_state.feedback == "wrong":
-    st.error(f"❌ Incorrect. The correct answer was: {st.session_state.current_q.get('answer')}")
-
-# Show explanation if available in JSON
-if st.session_state.answered and "explanation" in st.session_state.current_q:
-    with st.expander("See Detailed Explanation"):
-        st.write(st.session_state.current_q["explanation"])
-
+# స్కోరు ప్రదర్శన
 st.divider()
-st.write(f"### 🏆 Current Score: {st.session_state.score}")
+st.write(f"### 🏆 మీ ప్రస్తుత స్కోరు: {st.session_state.score}")
